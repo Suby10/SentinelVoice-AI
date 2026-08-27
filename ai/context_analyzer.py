@@ -676,10 +676,7 @@ if __name__ == "__main__":
     )
 
     sample_transcript = """
-    I am at the hospital after an accident.
-    Please send ₹50,000 immediately.
-    Don't tell anyone.
-    I need the money right now.
+    Good morning. So there is a scheme called money double in two days. In that we take money from you and make it double in two to three days and we give it back to you with little bit of brokerage charges. Like if you give 20,000 something we make it 40,000 and as a brokerage charges we deduct only 20 to 30 rupees one and we give it back the rest amount of you to the rest of the amount back to you in only 5 to 7 days.
     """
 
     result = analyzer.analyze(

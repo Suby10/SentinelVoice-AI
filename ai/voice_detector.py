@@ -10,72 +10,88 @@ class VoiceDetector:
 
         features = self.extractor.extract(audio_path)
 
-        clone_score = 0
+        score = 0
         reasons = []
 
-        # -------------------------
-        # Rule 1 - Energy Variation
-        # -------------------------
-        if features["rms_energy"] < 0.03:
-            clone_score += 20
-            reasons.append("Low vocal energy")
+        score += self.energy_analysis(features, reasons)
+        score += self.spectral_analysis(features, reasons)
+        score += self.tempo_analysis(features, reasons)
+        score += self.duration_analysis(features, reasons)
 
-        # -------------------------
-        # Rule 2 - Spectral Brightness
-        # -------------------------
-        if features["spectral_centroid"] > 3500:
-            clone_score += 20
-            reasons.append("Unusual spectral centroid")
+        score = min(score, 100)
 
-        # -------------------------
-        # Rule 3 - Frequency Spread
-        # -------------------------
-        if features["spectral_bandwidth"] < 1500:
-            clone_score += 15
-            reasons.append("Low spectral bandwidth")
-
-        # -------------------------
-        # Rule 4 - Speech Tempo
-        # -------------------------
-        tempo = features["tempo"]
-
-        if tempo < 70 or tempo > 190:
-            clone_score += 15
-            reasons.append("Unusual speaking tempo")
-
-        # -------------------------
-        # Rule 5 - Very Short Audio
-        # -------------------------
-        if features["duration"] < 2:
-            clone_score += 10
-            reasons.append("Very short recording")
-
-        clone_score = min(clone_score, 100)
-
-        if clone_score >= 60:
+        if score >= 60:
             prediction = "Likely AI Generated"
 
-        elif clone_score >= 30:
+        elif score >= 30:
             prediction = "Suspicious"
 
         else:
             prediction = "Likely Human"
 
-        confidence = 100 - clone_score
-
         return {
 
             "prediction": prediction,
 
-            "clone_probability": clone_score,
+            "clone_probability": score,
 
-            "confidence": confidence,
+            "confidence": 100 - score,
 
             "reasons": reasons,
 
             "features": features
 
         }
+
+    def energy_analysis(self, features, reasons):
+
+        if features["rms_energy"] < 0.03:
+
+            reasons.append("Low vocal energy")
+
+            return 20
+
+        return 0
+
+    def spectral_analysis(self, features, reasons):
+
+        score = 0
+
+        if features["spectral_centroid"] > 3500:
+
+            reasons.append("High spectral centroid")
+
+            score += 20
+
+        if features["spectral_bandwidth"] < 1500:
+
+            reasons.append("Low spectral bandwidth")
+
+            score += 15
+
+        return score
+
+    def tempo_analysis(self, features, reasons):
+
+        tempo = features["tempo"]
+
+        if tempo < 70 or tempo > 190:
+
+            reasons.append("Abnormal speaking tempo")
+
+            return 15
+
+        return 0
+
+    def duration_analysis(self, features, reasons):
+
+        if features["duration"] < 2:
+
+            reasons.append("Very short recording")
+
+            return 10
+
+        return 0
 
 
 if __name__ == "__main__":
@@ -86,15 +102,20 @@ if __name__ == "__main__":
         "assets/audio/genuine/genuine_1.wav"
     )
 
-    print("=" * 50)
-    print("VOICE ANALYSIS")
-    print("=" * 50)
+    print("=" * 60)
+    print("VOICE AUTHENTICITY ANALYSIS")
+    print("=" * 60)
 
-    print(f"Prediction : {result['prediction']}")
+    print(f"\nPrediction : {result['prediction']}")
     print(f"Confidence : {result['confidence']}%")
-    print(f"Clone Risk : {result['clone_probability']}%")
+    print(f"Clone Probability : {result['clone_probability']}%")
 
     print("\nReasons")
 
-    for r in result["reasons"]:
-        print("-", r)
+    if len(result["reasons"]) == 0:
+        print("No suspicious characteristics detected.")
+
+    else:
+
+        for reason in result["reasons"]:
+            print("-", reason)

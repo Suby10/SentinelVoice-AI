@@ -1,129 +1,143 @@
+from pprint import pprint
+
+from speech_to_text import SpeechToText
 from context_analyzer import ContextAnalyzer
+from voice_detector import VoiceDetector
 from trust_score import TrustScoreEngine
 
 
-def analyze_call(transcript, voice_risk_score=0, assisted_protection=True):
+class AIPipeline:
 
-    # ---------------------------------------------------------
-    # 1. Analyze conversation
-    # ---------------------------------------------------------
+    def __init__(self):
 
-    context_analyzer = ContextAnalyzer(
-        assisted_protection=assisted_protection
-    )
+        print("Initializing SentinelVoice AI...\n")
 
-    context_result = context_analyzer.analyze(
-        transcript
-    )
+        self.stt = SpeechToText()
 
-    context_risk = context_result["risk_score"]
+        self.context = ContextAnalyzer()
 
-    # ---------------------------------------------------------
-    # 2. Combine voice + context risk
-    # ---------------------------------------------------------
+        self.voice = VoiceDetector()
 
-    trust_engine = TrustScoreEngine(
-        voice_weight=0.5,
-        context_weight=0.5,
-    )
+        self.trust = TrustScoreEngine()
 
-    trust_result = trust_engine.calculate(
-        voice_risk_score=voice_risk_score,
-        context_risk_score=context_risk,
-    )
+        print("All AI modules loaded successfully!\n")
 
-    # ---------------------------------------------------------
-    # 3. Combine results
-    # ---------------------------------------------------------
+    def analyze(self, audio_path):
 
-    return {
-        "context_analysis": context_result,
-        "trust_analysis": trust_result,
-    }
+        print("=" * 60)
+        print(" SENTINELVOICE AI ANALYSIS STARTED")
+        print("=" * 60)
 
+        # -------------------------------------------------
+        # Step 1 : Speech To Text
+        # -------------------------------------------------
 
-# ============================================================
-# DEMO
-# ============================================================
+        stt_result = self.stt.transcribe(audio_path)
+
+        transcript = stt_result["text"]
+
+        print("\n✓ Speech converted to text.")
+
+        # -------------------------------------------------
+        # Step 2 : Context Analysis
+        # -------------------------------------------------
+
+        context_result = self.context.analyze(transcript)
+
+        print("✓ Context analysis completed.")
+
+        # -------------------------------------------------
+        # Step 3 : Voice Analysis
+        # -------------------------------------------------
+
+        voice_result = self.voice.analyze(audio_path)
+
+        print("✓ Voice authenticity analysis completed.")
+
+        # -------------------------------------------------
+        # Step 4 : Trust Score
+        # -------------------------------------------------
+
+        trust_result = self.trust.calculate(
+
+            voice_risk_score=voice_result["clone_probability"],
+
+            context_risk_score=context_result["risk_score"]
+
+        )
+
+        print("✓ Trust score generated.")
+
+        # -------------------------------------------------
+        # Final Summary
+        # -------------------------------------------------
+
+        if trust_result["overall_risk_score"] >= 70:
+
+            summary = {
+
+                "status": "HIGH RISK",
+
+                "reason":
+                    "Voice and conversation contain multiple suspicious indicators."
+
+            }
+
+        elif trust_result["overall_risk_score"] >= 40:
+
+            summary = {
+
+                "status": "MEDIUM RISK",
+
+                "reason":
+                    "Some suspicious indicators detected. Verification recommended."
+
+            }
+
+        else:
+
+            summary = {
+
+                "status": "LOW RISK",
+
+                "reason":
+                    "No major warning signs detected."
+
+            }
+
+        return {
+
+            "audio_file": audio_path,
+
+            "transcript": transcript,
+
+            "summary": summary,
+
+            "voice_analysis": voice_result,
+
+            "context_analysis": context_result,
+
+            "trust_analysis": trust_result
+
+        }
+
 
 if __name__ == "__main__":
 
-    transcript = """
-    I had an accident and I am at the hospital.
-    Please send 50000 immediately.
-    Don't tell anyone.
-    I need the money right now.
-    """
+    pipeline = AIPipeline()
 
-    # Temporary voice score.
-    # Later this will come from our voice detector.
-    voice_risk = 82
+    result = pipeline.analyze(
 
-    result = analyze_call(
-        transcript=transcript,
-        voice_risk_score=voice_risk,
-        assisted_protection=True,
+        "assets/audio/genuine/genuine_1.wav"
+
     )
 
-    context = result["context_analysis"]
-    trust = result["trust_analysis"]
+    print("\n")
 
-    print("\n========================================")
-    print("       SentinelVoice AI Pipeline")
-    print("========================================")
+    print("=" * 60)
 
-    print("\n--- CONTEXT ANALYSIS ---")
+    print(" FINAL AI REPORT ")
 
-    print("\nContext Risk:")
-    print(context["risk_score"])
+    print("=" * 60)
 
-    print("\nContext Level:")
-    print(context["risk_level"])
-
-    print("\nEmotional Pressure:")
-    print(context["emotional_pressure"])
-
-    print("\nUrgency:")
-    print(context["urgency"])
-
-    print("\nDetected Signals:")
-    print(context["detected_signals"])
-
-    print("\nTriggered Patterns:")
-    print(context["triggered_patterns"])
-
-    print("\nRisk Reasons:")
-
-    for reason in context["risk_reasons"]:
-        print(f"  - {reason}")
-
-    print("\nRecommendations:")
-
-    for recommendation in context["recommendations"]:
-        print(f"  - {recommendation}")
-
-    print("\n--- TRUST ANALYSIS ---")
-
-    print("\nVoice Risk:")
-    print(trust["voice_risk_score"])
-
-    print("\nContext Risk:")
-    print(trust["context_risk_score"])
-
-    print("\nOverall Risk:")
-    print(trust["overall_risk_score"])
-
-    print("\nTrust Score:")
-    print(trust["trust_score"])
-
-    print("\nRisk Level:")
-    print(trust["risk_level"])
-
-    print("\nDecision:")
-    print(trust["decision"])
-
-    print("\nMessage:")
-    print(trust["message"])
-
-    print("\nAssisted Protection:")
-    print(context["assisted_protection"])
+    pprint(result)
