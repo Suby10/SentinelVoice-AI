@@ -53,6 +53,19 @@ function getWaveformPalette(trust: number) {
 }
 
 export const TranscriptCardV2: React.FC<Props> = ({ data }) => {
+  if (!data.transcript) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+      <div className="text-xs uppercase tracking-wider text-slate-400">
+        Transcript
+      </div>
+
+      <p className="mt-3 text-sm text-slate-500">
+        Transcript unavailable for this recording.
+      </p>
+    </div>
+  );
+}
   const [copied, setCopied] = React.useState(false);
 
   const trustScore = data.trustEngine?.trustScore ?? 50;

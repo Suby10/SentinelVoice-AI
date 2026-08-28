@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { NormalizedAnalysis } from '../types/analysis';
 
 interface Props {

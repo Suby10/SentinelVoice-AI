@@ -14,7 +14,6 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   const [animatedValue, setAnimatedValue] = useState(0);
 
   useEffect(() => {
-    let start = 0;
     const duration = 1200;
     const startTime = performance.now();
 

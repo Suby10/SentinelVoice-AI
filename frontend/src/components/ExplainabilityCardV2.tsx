@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Lightbulb,
-  AlertTriangle,
   ShieldAlert,
   ShieldCheck,
   CheckCircle,
