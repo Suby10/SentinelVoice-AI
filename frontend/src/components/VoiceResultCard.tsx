@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 import type { NormalizedAnalysis } from '../types/analysis';
 
@@ -7,102 +7,86 @@ interface VoiceResultCardProps {
 }
 
 export const VoiceResultCard: React.FC<VoiceResultCardProps> = ({ data }) => {
+  const riskLevel = data.trustEngine?.riskLevel ?? 'UNKNOWN';
+  const trustScore = data.trustEngine?.trustScore ?? 0;
+  const overallRisk = data.trustEngine?.overallRiskScore ?? 0;
+  const decision = data.trustEngine?.decision ?? 'No decision available';
+
   const isFake = data.prediction === 'FAKE';
   const isReal = data.prediction === 'REAL';
 
+  const accentColor =
+    riskLevel === 'HIGH'
+      ? '#ef4444'
+      : riskLevel === 'MEDIUM'
+      ? '#d97706'
+      : '#059669';
+
   return (
-    <div className={`rounded-2xl border p-6 shadow-xl relative overflow-hidden ${
-      isFake
-        ? 'bg-rose-950/20 border-rose-800/40'
-        : isReal
-        ? 'bg-emerald-950/20 border-emerald-800/40'
-        : 'bg-slate-900/60 border-slate-800'
-    }`}>
-      <div className={`absolute top-0 right-0 w-64 h-64 rounded-full filter blur-3xl opacity-10 pointer-events-none ${
-        isFake ? 'bg-rose-500' : 'bg-emerald-500'
-      }`} />
+    <div className="bg-surface rounded-xl border border-border p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-[10px] font-medium uppercase tracking-widest text-appTextMuted">
+          Voice Analysis
+        </div>
+        <div
+          className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium border"
+          style={{
+            color: accentColor,
+            background: `${accentColor}0a`,
+            borderColor: `${accentColor}20`,
+          }}
+        >
+          {isFake ? (
+            <AlertTriangle className="w-3 h-3" />
+          ) : isReal ? (
+            <CheckCircle className="w-3 h-3" />
+          ) : (
+            <HelpCircle className="w-3 h-3" />
+          )}
+          {riskLevel}
+        </div>
+      </div>
 
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Voice Authenticity
+      {/* Prediction */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className="text-lg font-semibold"
+            style={{ color: accentColor }}
+          >
+            {data.prediction}
           </span>
-          <h3 className="text-xs text-slate-500">
-            Acoustic Feature Classification
-          </h3>
+          <span className="text-xs text-appTextMuted">
+            {data.predictionLabel}
+          </span>
         </div>
-
-        <span className="text-xs text-slate-400 font-mono">
-          {data.analyzedAt}
-        </span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 my-2">
-        <div className="flex items-center space-x-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-inner ${
-            isFake
-              ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
-              : isReal
-              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
-              : 'bg-slate-800 border-slate-700 text-slate-400'
-          }`}>
-            {isFake ? (
-              <AlertTriangle className="w-8 h-8" />
-            ) : isReal ? (
-              <CheckCircle className="w-8 h-8" />
-            ) : (
-              <HelpCircle className="w-8 h-8" />
-            )}
+      {/* Metrics */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="p-3 rounded-lg bg-surfaceHover border border-border">
+          <div className="text-[10px] text-appTextMuted uppercase tracking-wider mb-1">
+            Trust Score
           </div>
-
-          <div>
-            <div className={`text-2xl font-black tracking-tight uppercase ${
-              isFake
-                ? 'text-rose-400'
-                : isReal
-                ? 'text-emerald-400'
-                : 'text-slate-300'
-            }`}>
-              {data.predictionLabel}
-            </div>
-
-            <p className="text-xs text-slate-400 mt-0.5">
-              Source file:{' '}
-              <span className="font-mono text-slate-300">
-                {data.filename}
-              </span>
-            </p>
+          <div className="text-lg font-semibold text-appText tabular-nums">
+            {trustScore}%
           </div>
         </div>
-
-        <div className="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-800">
-          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Model Confidence
+        <div className="p-3 rounded-lg bg-surfaceHover border border-border">
+          <div className="text-[10px] text-appTextMuted uppercase tracking-wider mb-1">
+            Overall Risk
           </div>
-
-          <div className="text-3xl font-extrabold text-white font-mono tracking-tight">
-            {data.confidencePercentage}%
-          </div>
-
-          <div className="w-36 bg-slate-800 h-2 rounded-full mt-1.5 overflow-hidden border border-slate-700/50">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ${
-                isFake ? 'bg-rose-500' : 'bg-emerald-500'
-              }`}
-              style={{ width: `${data.confidencePercentage}%` }}
-            />
+          <div className="text-lg font-semibold tabular-nums" style={{ color: accentColor }}>
+            {overallRisk}%
           </div>
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-        <span>
-          Classifier: Random Forest (38 Acoustic Features)
-        </span>
-
-        <span className="text-slate-500">
-          Unseen test-set baseline: ~72.7%
-        </span>
+      {/* Decision */}
+      <div className="pt-3 border-t border-border flex items-center justify-between">
+        <span className="text-xs text-appTextSecondary">{decision}</span>
+        <span className="text-[10px] text-appTextMuted font-mono">{data.analyzedAt}</span>
       </div>
     </div>
   );

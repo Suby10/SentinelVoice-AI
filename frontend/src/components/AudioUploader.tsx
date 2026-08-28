@@ -75,43 +75,42 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
   };
 
   return (
-    <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 shadow-xl relative overflow-hidden">
+    <div className="bg-surface rounded-xl border border-border p-5 relative overflow-hidden">
       <audio
         ref={audioRef}
         onEnded={() => setIsPlaying(false)}
         className="hidden"
       />
 
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center pb-4 mb-5 border-b border-slate-800/80 gap-2">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center pb-4 mb-5 border-b border-border gap-2">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100 flex items-center space-x-2">
-            <span>Analyze a Voice Call</span>
+          <h2 className="text-sm font-semibold text-appText">
+            Analyze a Voice Call
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-appTextMuted mt-0.5">
             Upload a recorded call to inspect acoustic features and identify potential impersonation risk.
           </p>
         </div>
-        
-        {/* Live Mic placeholder for future expansion */}
-        <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 self-start">
-          <MicOff className="w-3 h-3 text-slate-500" />
+
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] text-appTextMuted self-start">
+          <MicOff className="w-3 h-3" />
           <span>Live Stream (Roadmap)</span>
         </div>
       </div>
 
-      {/* Drag & Drop Card */}
+      {/* Drop zone */}
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={() => !selectedFile && fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+        className={`border border-dashed rounded-lg p-5 text-center transition-colors ${
           dragActive
-            ? 'border-indigo-500 bg-indigo-500/5'
+            ? 'border-appText/30 bg-surfaceHover'
             : selectedFile
-            ? 'border-slate-700 bg-slate-950/40'
-            : 'border-slate-800 hover:border-slate-700 bg-slate-950/20 cursor-pointer'
+            ? 'border-border bg-surfaceHover/50'
+            : 'border-border hover:border-strong cursor-pointer'
         }`}
       >
         <input
@@ -124,43 +123,39 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
         />
 
         {!selectedFile ? (
-          <div className="flex flex-col items-center justify-center py-4">
-            <div className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center mb-3 text-indigo-400">
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-medium text-slate-200">
-              Drag and drop your audio file, or <span className="text-indigo-400 underline">browse</span>
+          <div className="flex flex-col items-center justify-center py-3">
+            <UploadCloud className="w-5 h-5 text-appTextMuted mb-2" />
+            <p className="text-xs text-appText font-medium">
+              Drag and drop your audio file, or{' '}
+              <span className="text-appTextSecondary underline">browse</span>
             </p>
-            <p className="text-xs text-slate-500 mt-1.5">
-              Supports uncompressed .WAV recordings (mono/stereo)
+            <p className="text-[11px] text-appTextMuted mt-1">
+              Supports uncompressed .WAV recordings
             </p>
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
-            <div className="flex items-center space-x-3 text-left w-full">
-              <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shrink-0">
-                <FileAudio className="w-6 h-6" />
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-1">
+            <div className="flex items-center gap-2.5 text-left w-full">
+              <FileAudio className="w-4 h-4 text-appTextMuted shrink-0" />
               <div className="truncate flex-1">
-                <p className="text-sm font-medium text-slate-200 truncate">{selectedFile.name}</p>
-                <p className="text-xs text-slate-400">
-                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB &bull; Audio/WAV
+                <p className="text-xs font-medium text-appText truncate">{selectedFile.name}</p>
+                <p className="text-[10px] text-appTextMuted">
+                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB · Audio/WAV
                 </p>
               </div>
             </div>
 
-            {/* Audio Preview controls */}
-            <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+            <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   togglePlayback();
                 }}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-medium flex items-center space-x-1.5 border border-slate-700"
+                className="px-2.5 py-1 rounded text-[11px] text-appText hover:bg-surfaceHover transition-colors flex items-center gap-1.5"
               >
-                {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                <span>{isPlaying ? 'Pause' : 'Play Preview'}</span>
+                {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                <span>{isPlaying ? 'Pause' : 'Play'}</span>
               </button>
 
               <button
@@ -170,10 +165,10 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
                   handleClear();
                 }}
                 disabled={isAnalyzing}
-                className="p-2 rounded-lg bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 border border-slate-700 transition"
+                className="p-1.5 rounded hover:bg-error-bg text-appTextMuted hover:text-errorText transition-colors"
                 title="Clear selected audio"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -181,19 +176,19 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
       </div>
 
       {validationError && (
-        <div className="mt-3 flex items-center space-x-2 text-xs text-red-400 bg-red-950/30 border border-red-800/40 p-2.5 rounded-lg">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="mt-3 flex items-center gap-2 text-[11px] text-errorText">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
           <span>{validationError}</span>
         </div>
       )}
 
-      {/* Action Footer */}
-      <div className="mt-5 flex items-center justify-end space-x-3">
+      {/* Actions */}
+      <div className="mt-4 flex items-center justify-end gap-2">
         <button
           type="button"
           onClick={handleClear}
           disabled={!selectedFile || isAnalyzing}
-          className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 disabled:opacity-40 transition"
+          className="px-3 py-1.5 rounded text-[11px] text-appTextMuted hover:text-appText disabled:opacity-30 transition-colors"
         >
           Clear
         </button>
@@ -201,9 +196,9 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
           type="button"
           onClick={onAnalyze}
           disabled={!selectedFile || isAnalyzing}
-          className="px-5 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white shadow-lg transition-all flex items-center space-x-2"
+          className="px-4 py-1.5 rounded text-[11px] font-medium bg-surfaceHover hover:bg-strong disabled:opacity-30 disabled:text-appTextMuted text-appText transition-colors border border-border"
         >
-          <span>{isAnalyzing ? 'Analyzing Recording...' : 'Analyze Call'}</span>
+          {isAnalyzing ? 'Analyzing...' : 'Analyze Call'}
         </button>
       </div>
     </div>

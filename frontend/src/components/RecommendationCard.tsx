@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { ShieldCheck, PhoneCall, AlertOctagon } from 'lucide-react';
 import type { NormalizedAnalysis } from '../types/analysis';
 
@@ -10,30 +10,26 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({ data }) 
   const isFake = data.prediction === 'FAKE';
   const isHighRisk = isFake || data.trustEngine?.riskLevel === 'HIGH';
 
-  return (
-    <div className={`rounded-xl border p-5 shadow-lg ${
-      isHighRisk
-        ? 'bg-rose-950/30 border-rose-800/50 text-rose-100'
-        : 'bg-slate-900/80 border-slate-800 text-slate-200'
-    }`}>
-      <div className="flex items-center space-x-2 mb-3">
-        {isHighRisk ? (
-          <AlertOctagon className="w-4 h-4 text-rose-400" />
-        ) : (
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-        )}
+  const accentColor = isHighRisk ? '#ef4444' : '#059669';
 
-        <h4 className="text-xs font-bold uppercase tracking-wider">
+  return (
+    <div className="bg-surface rounded-xl border border-border p-5">
+      <div className="flex items-center gap-2 mb-4">
+        {isHighRisk ? (
+          <AlertOctagon className="w-3.5 h-3.5 text-appTextMuted" />
+        ) : (
+          <ShieldCheck className="w-3.5 h-3.5 text-appTextMuted" />
+        )}
+        <h4 className="text-[10px] font-medium uppercase tracking-widest text-appTextMuted">
           Recommended Security Action
         </h4>
       </div>
 
-      <div className="mb-3">
-        <div className="text-sm font-bold tracking-tight">
+      <div className="mb-4 pl-3 border-l-2" style={{ borderColor: accentColor }}>
+        <div className="text-sm font-semibold text-appText">
           {isHighRisk ? 'PAUSE AND VERIFY' : 'PROCEED WITH NORMAL CAUTION'}
         </div>
-
-        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+        <p className="text-xs text-appTextSecondary mt-1.5 leading-relaxed">
           {isHighRisk
             ? 'Do not transfer money or disclose OTPs/credentials. Disconnect and independently contact the caller via a known authentic phone number.'
             : 'No immediate synthetic voice patterns detected. Maintain general security hygiene.'}
@@ -41,28 +37,28 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({ data }) 
       </div>
 
       {data.recommendations.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-slate-800/60 space-y-1.5">
+        <div className="mb-4 space-y-1.5">
           {data.recommendations.map((rec, i) => (
             <div
               key={i}
-              className="text-xs text-slate-300 flex items-center space-x-2"
+              className="text-xs text-appTextSecondary flex items-start gap-2"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              <span className="w-1 h-1 rounded-full bg-appTextMuted mt-1.5 shrink-0" />
               <span>{rec}</span>
             </div>
           ))}
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="pt-3 border-t border-border">
         <button
           type="button"
           onClick={() =>
             alert('Initiating verification sequence (UI Placeholder for demo)')
           }
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center space-x-1.5"
+          className="flex items-center gap-1.5 text-[11px] text-appTextSecondary hover:text-appText transition-colors"
         >
-          <PhoneCall className="w-3.5 h-3.5" />
+          <PhoneCall className="w-3 h-3" />
           <span>Independent Callback Check</span>
         </button>
       </div>

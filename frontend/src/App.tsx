@@ -1,7 +1,10 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ThemeProvider } from './hooks/useTheme';
 import { Header } from './components/Header';
 import { AudioUploader } from './components/AudioUploader';
 import { AnalysisProgress } from './components/AnalysisProgress';
+import { TrustScoreCard } from './components/TrustScoreCard';
+import { TrustEngineCard } from './components/TrustEngineCard';
 import { VoiceResultCard } from './components/VoiceResultCard';
 import { ContextAnalysisCard } from './components/ContextAnalysisCard';
 import { TranscriptCard } from './components/TranscriptCard';
@@ -60,110 +63,125 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      <Header
-        engineOnline={engineOnline}
-        assistedProtection={assistedProtection}
-        onToggleAssisted={() => setAssistedProtection((prev) => !prev)}
-      />
+    <ThemeProvider>
+      <div className="min-h-screen bg-base text-appText flex flex-col font-sans">
+        <Header
+          engineOnline={engineOnline}
+          assistedProtection={assistedProtection}
+          onToggleAssisted={() => setAssistedProtection((prev) => !prev)}
+        />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <AudioUploader
-              selectedFile={selectedFile}
-              onFileSelect={(file) => {
-                setSelectedFile(file);
-                if (!file) handleClear();
-              }}
-              onAnalyze={handleAnalyze}
-              isAnalyzing={
-                stage !== 'idle' &&
-                stage !== 'complete' &&
-                stage !== 'error'
-              }
-            />
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <AudioUploader
+                selectedFile={selectedFile}
+                onFileSelect={(file) => {
+                  setSelectedFile(file);
+                  if (!file) handleClear();
+                }}
+                onAnalyze={handleAnalyze}
+                isAnalyzing={
+                  stage !== 'idle' &&
+                  stage !== 'complete' &&
+                  stage !== 'error'
+                }
+              />
+            </div>
 
-          <div className="space-y-4">
-            <DemoAudioSelector
-              onSelectSample={(_name, file) => {
-                setSelectedFile(file);
-                setAnalysisResult(null);
-                setErrorMessage(null);
-                setStage('idle');
-              }}
-              disabled={
-                stage !== 'idle' &&
-                stage !== 'complete' &&
-                stage !== 'error'
-              }
-            />
+            <div className="space-y-4">
+              <DemoAudioSelector
+                onSelectSample={(_name, file) => {
+                  setSelectedFile(file);
+                  setAnalysisResult(null);
+                  setErrorMessage(null);
+                  setStage('idle');
+                }}
+                disabled={
+                  stage !== 'idle' &&
+                  stage !== 'complete' &&
+                  stage !== 'error'
+                }
+              />
 
-            <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-400 space-y-2">
-              <div className="font-semibold text-slate-300">
-                About SentinelVoice AI
+              <div className="p-4 rounded-xl bg-surface border border-border text-xs text-appTextSecondary space-y-1.5">
+                <div className="font-semibold text-appText text-[11px] uppercase tracking-wider">
+                  About SentinelVoice
+                </div>
+                <p className="leading-relaxed">
+                  Acoustic feature extraction maps 38 temporal and spectral parameters into our trained Random Forest classifier.
+                </p>
               </div>
-              <p>
-                Acoustic feature extraction maps 38 temporal and spectral parameters into our trained Random Forest classifier.
-              </p>
             </div>
           </div>
-        </div>
 
-        {stage !== 'idle' && stage !== 'complete' && (
-          <AnalysisProgress stage={stage} />
-        )}
+          {stage !== 'idle' && stage !== 'complete' && (
+            <AnalysisProgress stage={stage} />
+          )}
 
-        {errorMessage && (
-          <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 flex items-start space-x-3 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-semibold">Analysis Failed: </span>
-              <span>{errorMessage}</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setErrorMessage(null)}
-              className="text-rose-400 hover:text-rose-200"
+          {errorMessage && (
+            <div
+              className="p-4 rounded-xl border text-xs flex items-start space-x-3"
+              style={{
+                background: 'var(--error-bg)',
+                borderColor: 'var(--error-border)',
+                color: 'var(--error-text)',
+              }}
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <span className="font-semibold">Analysis Failed: </span>
+                <span style={{ opacity: 0.8 }}>{errorMessage}</span>
+              </div>
 
-        {assistedProtection && analysisResult && (
-          <AssistedProtection data={analysisResult} />
-        )}
-
-        {analysisResult && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-800 pb-2 flex justify-between items-center">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-                Security Analysis Overview
-              </h2>
+              <button
+                type="button"
+                onClick={() => setErrorMessage(null)}
+                className="opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
             </div>
+          )}
 
-            <VoiceResultCard data={analysisResult} />
+          {assistedProtection && analysisResult && (
+            <AssistedProtection data={analysisResult} />
+          )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ExplainabilityCard data={analysisResult} />
-              <RecommendationCard data={analysisResult} />
-              <ContextAnalysisCard data={analysisResult} />
-              <TranscriptCard data={analysisResult} />
+          {analysisResult && (
+            <div className="space-y-6">
+              <div className="border-b border-border pb-3">
+                <h2 className="text-[11px] font-semibold uppercase tracking-widest text-appTextMuted">
+                  Security Analysis Results
+                </h2>
+              </div>
+
+              <TrustScoreCard data={analysisResult} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <VoiceResultCard data={analysisResult} />
+                <TrustEngineCard data={analysisResult} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ExplainabilityCard data={analysisResult} />
+                <RecommendationCard data={analysisResult} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ContextAnalysisCard data={analysisResult} />
+                <TranscriptCard data={analysisResult} />
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
 
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-600">
-        <p>
-          SentinelVoice &bull; Smart India Hackathon Prototype &bull; Prototype RF Model
-        </p>
-      </footer>
-    </div>
+        <footer className="border-t border-border py-6 text-center text-[11px] text-appTextMuted">
+          SentinelVoice · Smart India Hackathon Prototype · Prototype RF Model
+        </footer>
+      </div>
+    </ThemeProvider>
   );
 };
 

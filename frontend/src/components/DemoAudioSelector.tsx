@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { PlayCircle } from 'lucide-react';
 
 interface DemoAudioSelectorProps {
@@ -43,9 +43,9 @@ export const DemoAudioSelector: React.FC<DemoAudioSelectorProps> = ({
   };
 
   return (
-    <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-xs">
-      <div className="flex items-center space-x-2 text-slate-400 font-semibold mb-2">
-        <PlayCircle className="w-3.5 h-3.5 text-indigo-400" />
+    <div className="p-4 rounded-xl bg-surface border border-border text-xs">
+      <div className="flex items-center space-x-2 text-appTextSecondary font-semibold mb-2">
+        <PlayCircle className="w-3.5 h-3.5 text-appTextMuted" />
         <span>Hackathon Fast-Test Samples</span>
       </div>
 
@@ -56,13 +56,13 @@ export const DemoAudioSelector: React.FC<DemoAudioSelectorProps> = ({
             type="button"
             disabled={disabled}
             onClick={() => loadSample(demo.file)}
-            className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-white transition disabled:opacity-40 text-left"
+            className="px-3 py-1.5 rounded-lg bg-surfaceHover border border-border hover:border-strong text-appText hover:text-appText transition disabled:opacity-40 text-left"
           >
             <div className="font-semibold text-[11px]">
               {demo.label}
             </div>
 
-            <div className="text-[10px] text-slate-500 font-mono">
+            <div className="text-[10px] text-appTextMuted font-mono">
               {demo.file}
             </div>
           </button>
