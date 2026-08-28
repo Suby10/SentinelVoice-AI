@@ -71,7 +71,7 @@ if __name__ == "__main__":
     extractor = AudioFeatureExtractor()
 
     result = extractor.extract(
-        "assets/audio/scam/scamm.wav"
+        "assets/audio/genuine/genuine_1.wav"
     )
 
     print("=" * 45)

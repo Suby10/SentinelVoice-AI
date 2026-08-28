@@ -1,0 +1,309 @@
+﻿import { useState } from 'react';
+import { Header } from './components/Header';
+import { AudioUploader } from './components/AudioUploader';
+import { AnalysisProgress } from './components/AnalysisProgress';
+import { analyzeAudio } from './services/api';
+import { normalizeAnalysisResponse } from './services/responseNormalizer';
+import type { NormalizedAnalysis } from './types/analysis';
+
+function App() {
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState<NormalizedAnalysis | null>(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [assistedProtection, setAssistedProtection] = useState(false);
+
+  // Backend is currently running and responding.
+  const [engineOnline] = useState(true);
+
+  const handleAnalyze = async () => {
+    if (!file) {
+      setError('Please select a WAV audio file first.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const data = await analyzeAudio(file);
+      const normalized = normalizeAnalysisResponse(data);
+      setResult(normalized);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to analyze the audio file.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileSelect = (selectedFile: File | null) => {
+    setFile(selectedFile);
+    setResult(null);
+    setError('');
+  };
+
+  const handleToggleAssisted = () => {
+    setAssistedProtection((current) => !current);
+  };
+
+  const isReal = result?.prediction === 'REAL';
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white">
+      
+      {/* TOP HEADER */}
+      <Header
+        engineOnline={engineOnline}
+        assistedProtection={assistedProtection}
+        onToggleAssisted={handleToggleAssisted}
+      />
+
+      {/* MAIN CONTENT */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-white">
+            Voice Authenticity Analysis
+          </h1>
+
+          <p className="text-sm text-slate-400 mt-1">
+            Analyze recorded voice calls for potential AI impersonation.
+          </p>
+        </div>
+
+        {/* AUDIO UPLOADER */}
+        <AudioUploader
+          selectedFile={file}
+          onFileSelect={handleFileSelect}
+          onAnalyze={handleAnalyze}
+          isAnalyzing={loading}
+        />
+
+        {/* ERROR */}
+        {error && (
+          <div
+            className={`mt-5 rounded-xl border p-4 ${
+              assistedProtection
+                ? 'border-red-500 bg-red-950/60'
+                : 'border-red-800/50 bg-red-950/30'
+            }`}
+          >
+            <div className="font-semibold text-red-400">
+              âŒ Analysis Error
+            </div>
+
+            <p
+              className={`mt-1 ${
+                assistedProtection
+                  ? 'text-base text-red-200'
+                  : 'text-sm text-red-300'
+              }`}
+            >
+              {error}
+            </p>
+          </div>
+        )}
+
+        {/* RESULT */}
+        {result && (
+          <div
+            className={`mt-5 rounded-2xl border p-6 ${
+              isReal
+                ? 'border-emerald-500/40 bg-emerald-950/30'
+                : 'border-red-500/40 bg-red-950/30'
+            }`}
+          >
+            {/* RESULT HEADER */}
+            <div className="flex items-start gap-4">
+              <div
+                className={`w-4 h-4 rounded-full mt-1.5 ${
+                  isReal
+                    ? 'bg-emerald-400 shadow-lg shadow-emerald-400/40'
+                    : 'bg-red-400 shadow-lg shadow-red-400/40'
+                }`}
+              />
+
+              <div>
+                <div className="text-xs uppercase tracking-wider text-slate-400">
+                  Prediction
+                </div>
+
+                <h2
+                  className={`text-2xl font-bold mt-1 ${
+                    isReal
+                      ? 'text-emerald-300'
+                      : 'text-red-300'
+                  }`}
+                >
+                  {result.predictionLabel}
+                </h2>
+              </div>
+            </div>
+
+            {/* BASIC DETAILS */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+              
+              <div className="rounded-xl bg-slate-950/50 border border-slate-800 p-4">
+                <div className="text-xs text-slate-500">
+                  File
+                </div>
+
+                <div className="text-sm font-semibold text-slate-200 mt-1 break-all">
+                  {result.filename}
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-slate-950/50 border border-slate-800 p-4">
+                <div className="text-xs text-slate-500">
+                  Confidence
+                </div>
+
+                <div className="text-sm font-semibold text-slate-200 mt-1">
+                  {result.confidencePercentage.toFixed(1)}%
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-slate-950/50 border border-slate-800 p-4">
+                <div className="text-xs text-slate-500">
+                  Status
+                </div>
+
+                <div className="text-sm font-semibold text-emerald-300 mt-1">
+                  Success
+                </div>
+              </div>
+            </div>
+
+            {/* REASONS */}
+            {result.reasons.length > 0 && (
+              <div className="mt-5 rounded-xl bg-slate-950/40 border border-slate-800 p-4">
+                <h3 className="text-sm font-semibold text-slate-200">
+                  Analysis Reasons
+                </h3>
+
+                <ul className="mt-2 space-y-1">
+                  {result.reasons.map((reason, index) => (
+                    <li
+                      key={index}
+                      className="text-sm text-slate-400"
+                    >
+                      â€¢ {reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* TRANSCRIPT */}
+            {result.transcript && (
+              <div className="mt-4 rounded-xl bg-slate-950/40 border border-slate-800 p-4">
+                <h3 className="text-sm font-semibold text-slate-200">
+                  Transcript
+                </h3>
+
+                <p className="text-sm text-slate-400 mt-2">
+                  {result.transcript.text}
+                </p>
+
+                <p className="text-xs text-slate-500 mt-2">
+                  Language: {result.transcript.language}
+                </p>
+              </div>
+            )}
+
+            {/* CONTEXT RISK */}
+            {result.contextRisk && (
+              <div className="mt-4 rounded-xl bg-slate-950/40 border border-slate-800 p-4">
+                <h3 className="text-sm font-semibold text-slate-200">
+                  Context Risk
+                </h3>
+
+                <p className="text-sm text-slate-400 mt-2">
+                  Level: {result.contextRisk.level}
+                </p>
+
+                <p className="text-sm text-slate-400 mt-1">
+                  Score: {result.contextRisk.score}
+                </p>
+              </div>
+            )}
+
+            {/* TRUST ENGINE */}
+            {result.trustEngine && (
+              <div className="mt-4 rounded-xl bg-slate-950/40 border border-slate-800 p-4">
+                <h3 className="text-sm font-semibold text-slate-200">
+                  Trust Engine
+                </h3>
+
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-slate-400">
+                    Risk Level: {result.trustEngine.riskLevel}
+                  </p>
+
+                  <p className="text-sm text-slate-400">
+                    Trust Score: {result.trustEngine.trustScore}
+                  </p>
+
+                  <p className="text-sm text-slate-400">
+                    Decision: {result.trustEngine.decision}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* RECOMMENDATIONS */}
+            {result.recommendations.length > 0 && (
+              <div className="mt-4 rounded-xl bg-slate-950/40 border border-slate-800 p-4">
+                <h3 className="text-sm font-semibold text-slate-200">
+                  Recommendations
+                </h3>
+
+                <ul className="mt-2 space-y-1">
+                  {result.recommendations.map(
+                    (recommendation, index) => (
+                      <li
+                        key={index}
+                        className="text-sm text-slate-400"
+                      >
+                        â€¢ {recommendation}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* FINAL MESSAGE */}
+            <div
+              className={`mt-5 rounded-xl p-4 ${
+                isReal
+                  ? 'bg-emerald-500/10 text-emerald-300'
+                  : 'bg-red-500/10 text-red-300'
+              } ${
+                assistedProtection
+                  ? 'text-lg font-semibold'
+                  : 'text-sm'
+              }`}
+            >
+              {result.predictionLabel}
+            </div>
+          </div>
+        )}
+
+        {/* FOOTER */}
+        <div className="text-center text-xs text-slate-600 mt-8 pb-6">
+          SentinelVoice â€¢ AI-Powered Voice Impersonation Protection
+        </div>
+
+      </main>
+    </div>
+  );
+}
+
+export default App;

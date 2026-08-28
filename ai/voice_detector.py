@@ -1,4 +1,4 @@
-from audio_features import AudioFeatureExtractor
+from ai.audio_features import AudioFeatureExtractor
 
 
 class VoiceDetector:

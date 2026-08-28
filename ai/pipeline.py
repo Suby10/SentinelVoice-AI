@@ -1,9 +1,10 @@
+import os
 from pprint import pprint
 
-from speech_to_text import SpeechToText
-from context_analyzer import ContextAnalyzer
-from voice_detector import VoiceDetector
-from trust_score import TrustScoreEngine
+from ai.speech_to_text import SpeechToText
+from ai.context_analyzer import ContextAnalyzer
+from ai.voice_detector import VoiceDetector
+from ai.trust_score import TrustScoreEngine
 
 
 class AIPipeline:
@@ -105,20 +106,55 @@ class AIPipeline:
 
             }
 
+       
+
+        # Convert detected_signals to a list if it's a dictionary
+        detected_signals = context_result.get("detected_signals", {})
+
+        if isinstance(detected_signals, dict):
+            detected_signals = list(detected_signals.keys())
+
         return {
-
-            "audio_file": audio_path,
-
-            "transcript": transcript,
-
-            "summary": summary,
-
-            "voice_analysis": voice_result,
-
-            "context_analysis": context_result,
-
-            "trust_analysis": trust_result
-
+            "filename": os.path.basename(audio_path),
+            "audio": {
+                "duration": voice_result["features"]["duration"],
+                "sample_rate": voice_result["features"]["sample_rate"]
+            },
+            "transcript": {
+                "text": stt_result["text"],
+                "language": stt_result["language"]
+            },
+            "prediction": (
+                "REAL"
+                if voice_result["prediction"] == "Likely Human"
+                else "FAKE"
+            ),
+            "confidence": voice_result["confidence"],
+            "voice_analysis": {
+                "prediction": voice_result["prediction"],
+                "clone_probability": voice_result["clone_probability"],
+                "confidence": voice_result["confidence"],
+                "reasons": voice_result["reasons"]
+            },
+            "context_analysis": {
+                "risk_score": context_result["risk_score"],
+                "risk_level": context_result["risk_level"],
+                "detected_signals": detected_signals,
+                "risk_reasons": context_result["risk_reasons"]
+            },
+            "trust_analysis": {
+                "voice_risk_score": trust_result["voice_risk_score"],
+                "context_risk_score": trust_result["context_risk_score"],
+                "overall_risk_score": trust_result["overall_risk_score"],
+                "trust_score": trust_result["trust_score"],
+                "risk_level": trust_result["risk_level"],
+                "decision": trust_result["decision"]
+            },
+            "protection": {
+                "enabled": context_result["assisted_protection"]["enabled"],
+                "recommendations": context_result["recommendations"]
+            },
+            "summary": summary
         }
 
 
