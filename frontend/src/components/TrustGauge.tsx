@@ -1,5 +1,3 @@
-
-
 interface TrustGaugeProps {
   value: number;
   label: string;
